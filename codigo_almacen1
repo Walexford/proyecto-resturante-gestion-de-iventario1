@@ -1,0 +1,134 @@
+from datetime import datetime, timedelta
+
+# ==========================================
+# ESTRUCTURAS DE DATOS INICIALES (ALMACÉN)
+# ==========================================
+# Teoría de estructuras de datos: 
+# Se utiliza una estructura de datos unidimensional (una Lista de Python)[cite: 551, 633] 
+# que actúa como un contenedor secuencial dinámico. Cada elemento dentro de esta lista 
+# es un Diccionario (estructura clave-valor), lo que simula una estructura bidimensional 
+# o tabla relacional[cite: 551, 633] donde cada diccionario representa un registro 
+# completo de un producto con sus respectivos atributos (nombre, categoría, cantidad, etc.).
+inventario = [
+    {"nombre": "Carne de Res", "categoria": "Carne", "cantidad": 12, "unidad": "kg", "caducidad": "2026-10-25"},
+    {"nombre": "Pechuga de Pollo", "categoria": "Carne", "cantidad": 4, "unidad": "kg", "caducidad": "2026-10-17"},
+    {"nombre": "Lechuga", "categoria": "Verdura", "cantidad": 2, "unidad": "unidades", "caducidad": "2026-10-16"},
+    {"nombre": "Tomate", "categoria": "Verdura", "cantidad": 8, "unidad": "kg", "caducidad": "2026-10-22"},
+    {"nombre": "Crema de Aji Artesanal", "categoria": "Crema", "cantidad": 3, "unidad": "frascos", "caducidad": "2026-10-18"},
+    {"nombre": "Mayonesa Casera", "categoria": "Crema", "cantidad": 1, "unidad": "frascos", "caducidad": "2026-10-16"}
+]
+
+# ==========================================
+# FUNCIONES DEL SISTEMA (SOLO ALMACÉN)
+# ==========================================
+# Teoría de funciones y modularidad[cite: 687, 863]: 
+# El programa está desglosado en bloques independientes (funciones) para encapsular 
+# la lógica y mantener el principio de responsabilidad única. Asimismo, se gestiona 
+# el alcance de las variables (scope)[cite: 753], permitiendo el acceso de lectura 
+# a la variable global 'inventario' desde el ámbito local de cada función.
+
+def ver_inventario():
+    """
+    Operación de recorrido y lectura en listas/arreglos[cite: 551]:
+    - Utiliza un bucle iterativo 'for' para recorrer secuencialmente cada diccionario 
+      almacenado en la lista 'inventario'.
+    - Aplica formato de cadenas (f-strings) con operadores de alineación de columnas (<) 
+      para estructurar la salida visual en consola de manera tabular.
+    """
+    print("\n" + "="*65)
+    print("INVENTARIO GENERAL DEL ALMACÉN")
+    print("="*65)
+    print(f"{'PRODUCTO':<25} | {'CATEGORÍA':<10} | {'CANTIDAD':<8} | {'CADUCIDAD'}")
+    print("-" * 65)
+    for p in inventario:
+        print(f"{p['nombre']:<25} | {p['categoria']:<10} | {p['cantidad']:<8} | {p['caducidad']}")
+    print("="*65)
+    input("\nPresiona '0' o cualquier tecla para volver al menú principal: ")
+
+def mostrar_stock_bajo():
+    """
+    Operación de búsqueda y filtrado de elementos[cite: 551]:
+    - Emplea el concepto de Comprensión de Listas (List Comprehension), un mecanismo 
+      eficiente en Python para evaluar una condición lógica (p['cantidad'] < 5) 
+      y extraer un subconjunto de elementos que cumplen el criterio de stock crítico.
+    """
+    print("\n" + "="*40)
+    print("PRODUCTOS CON STOCK BAJO (< 5 unidades/kg)")
+    print("="*40)
+    stock_bajo = [p for p in inventario if p["cantidad"] < 5]
+    if stock_bajo:
+        for p in stock_bajo:
+            print(f" - {p['nombre']} ({p['categoria']}): Solo quedan {p['cantidad']} {p['unidad']}")
+    else:
+        print(" No hay productos con stock bajo.")
+    print("="*40)
+    input("\nPresiona '0' o cualquier tecla para volver al menú principal: ")
+
+def mostrar_proximos_a_vencer():
+    """
+    Operación de procesamiento cronológico y control de excepciones[cite: 551]:
+    - Conversión de tipos: transforma cadenas de texto de formato estándar ('YYYY-MM-DD') 
+      a objetos de tipo fecha mediante 'datetime.strptime'.
+    - Uso de 'timedelta' para realizar operaciones aritméticas con fechas (definir una 
+      ventana de alerta de 3 días respecto a la fecha actual del sistema).
+    - Implementación de bloques de control de errores (try-except) para prevenir 
+      interrupciones ante posibles fallos de formato (ValueError) en los registros.
+    """
+    print("\n" + "="*40)
+    print("PRODUCTOS PRÓXIMOS A VENCER O VENCIDOS")
+    print("="*40)
+    
+    hoy = datetime.now().date()
+    limite_vencimiento = hoy + timedelta(days=3)
+    vencimiento_cercano = False
+    
+    for p in inventario:
+        try:
+            fecha_cad = datetime.strptime(p["caducidad"], "%Y-%m-%d").date()
+            if fecha_cad <= limite_vencimiento:
+                vencimiento_cercano = True
+                estado = "VENCIDO" if fecha_cad < hoy else "Vence pronto"
+                print(f" - {p['nombre']} ({p['caducidad']}): {estado}")
+        except ValueError:
+            pass
+            
+    if not vencimiento_cercano:
+        print(" Ningún producto está próximo a vencer.")
+    print("="*40)
+    input("\nPresiona '0' o cualquier tecla para volver al menú principal: ")
+
+# ==========================================
+# BUCLE PRINCIPAL DEL PROGRAMA
+# ==========================================
+
+def main():
+    """
+    Controlador de flujo principal y ciclo interactivo[cite: 687, 863]:
+    - Implementa un bucle infinito controlado ('while True') para mantener la ejecución 
+      activa de la aplicación en la interfaz de consola.
+    - Utiliza estructuras condicionales anidadas o múltiples (if-elif-else) para rutear 
+      la ejecución según la opción numérica ingresada por el usuario.
+    """
+    while True:
+        print("\n--- SISTEMA DE GESTIÓN DE ALMACÉN ---")
+        print("1. Ver Inventario General")
+        print("2. Ver productos con stock bajo")
+        print("3. Ver productos próximos a vencer / vencidos")
+        print("4. Salir")
+        
+        opcion = input("\nSelecciona una opción (1-4): ")
+        
+        if opcion == "1":
+            ver_inventario()
+        elif opcion == "2":
+            mostrar_stock_bajo()
+        elif opcion == "3":
+            mostrar_proximos_a_vencer()
+        elif opcion == "4":
+            print("\nSaliendo del sistema de almacén. Hasta luego.")
+            break
+        else:
+            print("Opción no válida. Por favor, elige un número entre 1 y 4.")
+
+if __name__ == "__main__":
+    main()
